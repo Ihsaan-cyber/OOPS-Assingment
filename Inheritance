@@ -2,7 +2,7 @@
 #include <string>
 using namespace std;
 
-// ---------- Base Class ----------
+
 class Animal {
 public:
     string name;
@@ -25,7 +25,7 @@ public:
     }
 };
 
-// ---------- Derived Class ----------
+
 // Dog inherits ALL public members of Animal
 class Dog : public Animal {
 public:
@@ -44,8 +44,7 @@ public:
     }
 };
 
-// ---------- Further Derived Class ----------
-// GuideDog inherits from Dog (and transitively from Animal)
+
 class GuideDog : public Dog {
 public:
     string owner;
@@ -64,7 +63,7 @@ public:
     }
 };
 
-// ---------- main ----------
+
 int main() {
     cout << "===== Inheritance Demo =====\n\n";
 

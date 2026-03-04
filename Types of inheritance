@@ -132,7 +132,7 @@ int main() {
     
     cout << "\n5. Hybrid Inheritance (virtual base):\n";
     Hybrid::FacultyStudent fs("Dr. Smith");
-    fs.showName();       // unambiguous – only one Person
+    fs.showName();       
     fs.study();
     fs.teach();
     fs.doResearch();

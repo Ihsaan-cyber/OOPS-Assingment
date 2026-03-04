@@ -1,0 +1,146 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+using namespace std;
+
+
+// PART A – Classic shape example: vtable in action
+
+class Shape {
+public:
+    virtual string name()  const = 0;
+    virtual double area()  const = 0;
+    virtual void   draw()  const {
+        cout << "  Drawing " << name() << " with area " << area() << "\n";
+    }
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+    double r;
+public:
+    Circle(double radius) : r(radius) {}
+    string name() const override { return "Circle"; }
+    double area() const override { return 3.14159 * r * r; }
+};
+
+class Rectangle : public Shape {
+    double w, h;
+public:
+    Rectangle(double w, double h) : w(w), h(h) {}
+    string name() const override { return "Rectangle"; }
+    double area() const override { return w * h; }
+};
+
+class Triangle : public Shape {
+    double b, ht;
+public:
+    Triangle(double base, double height) : b(base), ht(height) {}
+    string name() const override { return "Triangle"; }
+    double area() const override { return 0.5 * b * ht; }
+};
+
+
+// PART B – Dynamic binding through a reference (not just pointer)
+
+class Instrument {
+public:
+    virtual void play() const { cout << "  [Instrument] Playing generic sound\n"; }
+    virtual ~Instrument() = default;
+};
+
+class Guitar : public Instrument {
+public:
+    void play() const override { cout << "  [Guitar]     Strum strum!\n"; }
+};
+
+class Piano : public Instrument {
+public:
+    void play() const override { cout << "  [Piano]      Ding dong!\n"; }
+};
+
+class Drums : public Instrument {
+public:
+    void play() const override { cout << "  [Drums]      Boom tss!\n"; }
+};
+
+
+void performConcert(const Instrument& inst) {
+    inst.play();    // resolved at runtime
+}
+
+
+// PART C – Static vs Dynamic binding side-by-side
+
+class Base {
+public:
+    // Non-virtual – STATIC binding
+    void staticFunc() const {
+        cout << "  Base::staticFunc()  [static  binding]\n";
+    }
+    // Virtual – DYNAMIC binding
+    virtual void dynamicFunc() const {
+        cout << "  Base::dynamicFunc() [dynamic binding – Base]\n";
+    }
+    virtual ~Base() = default;
+};
+
+class Child : public Base {
+public:
+    void staticFunc() const {               // hides Base version (not override)
+        cout << "  Child::staticFunc() [static  binding]\n";
+    }
+    void dynamicFunc() const override {
+        cout << "  Child::dynamicFunc()[dynamic binding – Child]\n";
+    }
+};
+
+// ---------- main ----------
+int main() {
+    cout << "===== Dynamic Binding Demo =====\n\n";
+
+    
+    cout << "--- Part A: Virtual dispatch through base pointer ---\n";
+    vector<unique_ptr<Shape>> shapes;
+    shapes.push_back(make_unique<Circle>   (5.0));
+    shapes.push_back(make_unique<Rectangle>(4.0, 6.0));
+    shapes.push_back(make_unique<Triangle> (3.0, 8.0));
+
+    for (const auto& s : shapes)
+        s->draw();      // dynamic binding: correct draw() every time
+
+    
+    cout << "\n--- Part B: Dynamic binding via reference ---\n";
+    Guitar g;  Piano p;  Drums d;
+    performConcert(g);
+    performConcert(p);
+    performConcert(d);
+
+    
+    cout << "\n--- Part C: Static vs Dynamic binding comparison ---\n";
+    Base*  bp = new Child();
+
+    cout << "  Using Base pointer to Child object:\n";
+    bp->staticFunc();    // Base::staticFunc – static binding (ptr type = Base)
+    bp->dynamicFunc();   // Child::dynamicFunc – dynamic binding (obj type = Child)
+
+    Child* cp = new Child();
+    cout << "  Using Child pointer to Child object:\n";
+    cp->staticFunc();    // Child::staticFunc
+    cp->dynamicFunc();   // Child::dynamicFunc
+
+    delete bp;
+    delete cp;
+
+    for (const auto& s : mixed)
+        printType(*s);   // typeid reveals actual type at runtime
+
+    // ---- SUMMARY ----
+    cout << "\n--- Summary ---\n";
+    cout << "  Virtual function calls through base ptr/ref\n"
+         << "  => resolved at RUNTIME based on actual object type\n"
+         << "  => this is DYNAMIC BINDING (runtime polymorphism)\n";
+
+    return 0;
+}

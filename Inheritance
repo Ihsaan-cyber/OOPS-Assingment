@@ -1,0 +1,85 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+// ---------- Base Class ----------
+class Animal {
+public:
+    string name;
+    int    age;
+
+    Animal(string n, int a) : name(n), age(a) {
+        cout << "[Animal] Constructor called for " << name << "\n";
+    }
+
+    void eat() {
+        cout << name << " is eating.\n";
+    }
+
+    void breathe() {
+        cout << name << " is breathing.\n";
+    }
+
+    ~Animal() {
+        cout << "[Animal] Destructor called for " << name << "\n";
+    }
+};
+
+// ---------- Derived Class ----------
+// Dog inherits ALL public members of Animal
+class Dog : public Animal {
+public:
+    string breed;
+
+    Dog(string n, int a, string b) : Animal(n, a), breed(b) {
+        cout << "[Dog] Constructor called for " << name << "\n";
+    }
+
+    void bark() {
+        cout << name << " (" << breed << ") says: Woof!\n";
+    }
+
+    ~Dog() {
+        cout << "[Dog] Destructor called for " << name << "\n";
+    }
+};
+
+// ---------- Further Derived Class ----------
+// GuideDog inherits from Dog (and transitively from Animal)
+class GuideDog : public Dog {
+public:
+    string owner;
+
+    GuideDog(string n, int a, string b, string o)
+        : Dog(n, a, b), owner(o) {
+        cout << "[GuideDog] Constructor called for " << name << "\n";
+    }
+
+    void guide() {
+        cout << name << " is guiding " << owner << " safely.\n";
+    }
+
+    ~GuideDog() {
+        cout << "[GuideDog] Destructor called for " << name << "\n";
+    }
+};
+
+// ---------- main ----------
+int main() {
+    cout << "===== Inheritance Demo =====\n\n";
+
+    cout << "-- Creating Dog object --\n";
+    Dog d("Rex", 3, "Labrador");
+    d.eat();          
+    d.breathe();      
+    d.bark();         
+
+    cout << "\n-- Creating GuideDog object --\n";
+    GuideDog gd("Buddy", 5, "Golden Retriever", "Alice");
+    gd.eat();         
+    gd.bark();        
+    gd.guide();       
+
+    cout << "\n-- Destructor order (reverse of construction) --\n";
+    return 0;
+}

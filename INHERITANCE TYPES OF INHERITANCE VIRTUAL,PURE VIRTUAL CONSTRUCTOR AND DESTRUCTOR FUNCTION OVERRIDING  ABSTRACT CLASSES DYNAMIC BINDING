@@ -1,0 +1,158 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+
+// Helper to show indented messages clearly
+
+void msg(const string& who, const string& action) {
+    cout << "  [" << who << "] " << action << "\n";
+}
+
+
+// LEVEL 1 – Base class
+
+class Person {
+protected:
+    string name;
+    int    age;
+
+public:
+    
+    Person() : name("Unknown"), age(0) {
+        msg("Person", "Default constructor  | name=" + name);
+    }
+
+    
+    Person(const string& n, int a) : name(n), age(a) {
+        msg("Person", "Param constructor    | name=" + name + ", age=" + to_string(age));
+    }
+
+    
+    Person(const Person& other) : name(other.name), age(other.age) {
+        msg("Person", "Copy constructor     | name=" + name);
+    }
+
+    
+    virtual ~Person() {
+        msg("Person", "Destructor           | name=" + name);
+    }
+
+    virtual void display() const {
+        cout << "  Name: " << name << "  Age: " << age << "\n";
+    }
+};
+
+// LEVEL 2 – Derived from Person
+
+class Student : public Person {
+    string studentID;
+    double gpa;
+
+public:
+    // Must explicitly pass arguments to Person via initialiser list
+    Student(const string& n, int a, const string& id, double g)
+        : Person(n, a),         // <-- base constructor called here
+          studentID(id), gpa(g)
+    {
+        msg("Student", "Constructor          | id=" + studentID);
+    }
+
+    Student(const Student& other)
+        : Person(other),        // copy-construct the base part first
+          studentID(other.studentID), gpa(other.gpa)
+    {
+        msg("Student", "Copy constructor     | id=" + studentID);
+    }
+
+    ~Student() override {
+        msg("Student", "Destructor           | id=" + studentID);
+    }
+
+    void display() const override {
+        Person::display();      // reuse base display
+        cout << "  ID: " << studentID << "  GPA: " << gpa << "\n";
+    }
+};
+
+
+// LEVEL 3 – Derived from Student  (multilevel)
+
+class GradStudent : public Student {
+    string thesis;
+
+public:
+    GradStudent(const string& n, int a, const string& id, double g,
+                const string& t)
+        : Student(n, a, id, g),    // <-- Student constructor (which calls Person)
+          thesis(t)
+    {
+        msg("GradStudent", "Constructor          | thesis=" + thesis);
+    }
+
+    ~GradStudent() override {
+        msg("GradStudent", "Destructor           | thesis=" + thesis);
+    }
+
+    void display() const override {
+        Student::display();
+        cout << "  Thesis: " << thesis << "\n";
+    }
+};
+
+
+// DEMONSTRATING virtual destructor importance
+
+class Base {
+public:
+    Base()           { msg("Base",    "Constructor (non-virtual dtor demo)"); }
+    virtual ~Base()  { msg("Base",    "Destructor  (virtual – correct!)");    }
+};
+
+class Derived : public Base {
+public:
+    Derived()           { msg("Derived", "Constructor"); }
+    ~Derived() override { msg("Derived", "Destructor");  }
+};
+
+
+int main() {
+    cout << "===== Constructors & Destructors in Inheritance =====\n\n";
+
+    
+    cout << "-- Creating GradStudent on stack --\n";
+    {
+        GradStudent gs("Alice", 25, "G001", 3.9, "ML in Healthcare");
+        cout << "\n  Display:\n";
+        gs.display();
+        cout << "\n  (GradStudent goes out of scope – destructors fire)\n";
+    }
+
+    
+    cout << "\n-- Polymorphic delete (base pointer -> derived object) --\n";
+    {
+        Person* p = new Student("Bob", 20, "S101", 3.5);
+        p->display();
+        cout << "  Calling delete p ...\n";
+        delete p;   // virtual ~Person() ensures ~Student() is also called
+    }
+
+    
+    cout << "\n-- Copy constructor chain --\n";
+    {
+        Student original("Carol", 22, "S200", 3.7);
+        cout << "  Copying...\n";
+        Student copy(original);
+        cout << "  Both going out of scope:\n";
+    }
+
+    
+    cout << "\n-- Virtual destructor correctness --\n";
+    {
+        Base* b = new Derived();
+        cout << "  Deleting via Base pointer...\n";
+        delete b;   // both ~Derived and ~Base called because ~Base is virtual
+    }
+
+    return 0;
+}

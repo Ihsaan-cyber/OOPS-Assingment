@@ -1,17 +1,3 @@
-// ============================================================
-//  TOPIC: ABSTRACT CLASSES
-//
-//  An abstract class:
-//  • Contains at least one pure virtual function (= 0).
-//  • Cannot be instantiated directly.
-//  • Serves as an interface/contract that derived classes must fulfil.
-//  • Can still have data members, constructors, and concrete methods.
-//
-//  Common use-cases:
-//    - Defining a common interface (like Java's interface/abstract class)
-//    - Template Method Pattern (base defines algorithm skeleton)
-// ============================================================
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -19,21 +5,21 @@
 #include <cmath>
 using namespace std;
 
-// ==============================================================
+
 // EXAMPLE 1 – Shape hierarchy (pure interface style)
-// ==============================================================
-class Shape {                       // <<abstract>>
+
+class Shape {                       
 protected:
     string color;
 public:
     Shape(const string& c = "black") : color(c) {}
 
-    // Pure virtual – every shape MUST implement these
+    
     virtual double area()      const = 0;
     virtual double perimeter() const = 0;
     virtual string name()      const = 0;
 
-    // Concrete method available to all shapes
+    
     void printInfo() const {
         cout << "  " << name()
              << " [" << color << "]"
@@ -74,14 +60,12 @@ public:
     string name()      const override { return "EqTriangle"; }
 };
 
-// ==============================================================
+
 // EXAMPLE 2 – Template Method Pattern
-//             Abstract base defines the algorithm skeleton;
-//             derived classes fill in the blanks.
-// ==============================================================
-class DataProcessor {               // <<abstract>>
+
+class DataProcessor {               
 public:
-    // Template method – NOT virtual; defines the fixed algorithm
+    
     void process() {
         readData();
         processData();
@@ -110,10 +94,10 @@ protected:
     void writeOutput() override { cout << "  [JSON] Writing  results to output.json\n"; }
 };
 
-// ==============================================================
+
 // EXAMPLE 3 – Abstract class with constructor & concrete members
-// ==============================================================
-class BankAccount {                 // <<abstract>>
+
+class BankAccount {                 
 protected:
     string owner;
     double balance;
@@ -127,7 +111,7 @@ public:
     virtual void deposit(double amount)  = 0;
     virtual void withdraw(double amount) = 0;
 
-    // Concrete
+    
     double getBalance() const { return balance; }
     void   showBalance() const {
         cout << "  " << owner << "'s balance: " << balance << "\n";
@@ -143,7 +127,7 @@ public:
         : BankAccount(o, b), interestRate(rate) {}
 
     void deposit(double amount) override {
-        balance += amount * (1 + interestRate);  // earns interest on deposit
+        balance += amount * (1 + interestRate);  
         cout << "  [Savings] Deposited " << amount
              << " (with interest). New balance: " << balance << "\n";
     }
@@ -211,8 +195,8 @@ int main() {
     accounts[0]->deposit(200);
     accounts[0]->withdraw(50);
     accounts[1]->deposit(300);
-    accounts[1]->withdraw(900);   // uses overdraft
-    accounts[1]->withdraw(500);   // exceeds overdraft
+    accounts[1]->withdraw(900);   
+    accounts[1]->withdraw(500);   
 
     return 0;
 }

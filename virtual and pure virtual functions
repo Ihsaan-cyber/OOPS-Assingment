@@ -1,0 +1,151 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+using namespace std;
+
+
+
+
+class Logger {
+public:
+    
+    virtual void log(const string& msg) {
+        cout << "[BaseLogger] " << msg << "\n";
+    }
+
+    virtual ~Logger() = default;   
+};
+
+class FileLogger : public Logger {
+public:
+    void log(const string& msg) override {
+        cout << "[FileLogger -> file.txt] " << msg << "\n";
+    }
+};
+
+class ConsoleLogger : public Logger {
+    
+};
+
+
+
+
+class Shape {
+public:
+    string color;
+    Shape(string c = "white") : color(c) {}
+
+    
+    virtual double area()      const = 0;
+    virtual double perimeter() const = 0;
+
+    
+    virtual void describe() const {
+        cout << "  Shape color: " << color
+             << "  | area = "      << area()
+             << "  | perimeter = " << perimeter() << "\n";
+    }
+
+    virtual ~Shape() = default;
+};
+
+class Circle : public Shape {
+    double radius;
+public:
+    Circle(double r, string c = "red") : Shape(c), radius(r) {}
+
+    double area()      const override { return 3.14159 * radius * radius; }
+    double perimeter() const override { return 2 * 3.14159 * radius; }
+};
+
+class Rectangle : public Shape {
+    double width, height;
+public:
+    Rectangle(double w, double h, string c = "blue")
+        : Shape(c), width(w), height(h) {}
+
+    double area()      const override { return width * height; }
+    double perimeter() const override { return 2 * (width + height); }
+};
+
+class Triangle : public Shape {
+    double a, b, c;     // three sides
+public:
+    Triangle(double a, double b, double c, string col = "green")
+        : Shape(col), a(a), b(b), c(c) {}
+
+    double area() const override {
+        double s = (a + b + c) / 2.0;
+        return sqrt(s * (s-a) * (s-b) * (s-c));  // Heron's formula
+    }
+    double perimeter() const override { return a + b + c; }
+};
+
+
+// PART C – Pure virtual with partial implementation
+
+class Animal {
+public:
+    string name;
+    Animal(string n) : name(n) {}
+
+    // pure virtual WITH a body (unusual but legal)
+    virtual void sound() const = 0;
+
+    virtual ~Animal() = default;
+};
+
+
+void Animal::sound() const {
+    cout << "  [Animal::sound] Generic animal sound from " << name << "\n";
+}
+
+class Dog : public Animal {
+public:
+    Dog(string n) : Animal(n) {}
+    void sound() const override {
+        Animal::sound();                       
+        cout << "  [Dog] Woof! – " << name << "\n";
+    }
+};
+
+class Cat : public Animal {
+public:
+    Cat(string n) : Animal(n) {}
+    void sound() const override {
+        cout << "  [Cat] Meow! – " << name << "\n";
+    }
+};
+
+// ---------- main ----------
+int main() {
+    cout << "===== Virtual & Pure Virtual Functions Demo =====\n\n";
+
+    
+    cout << "--- Part A: Regular virtual function ---\n";
+    Logger*    loggers[] = { new Logger(), new FileLogger(), new ConsoleLogger() };
+    for (auto l : loggers) { l->log("System started"); delete l; }
+
+    
+    cout << "\n--- Part B: Pure virtual / Abstract class ---\n";
+    // Shape s;  // ERROR: cannot instantiate abstract class
+
+    vector<unique_ptr<Shape>> shapes;
+    shapes.push_back(make_unique<Circle>   (5.0));
+    shapes.push_back(make_unique<Rectangle>(4.0, 6.0));
+    shapes.push_back(make_unique<Triangle> (3.0, 4.0, 5.0));
+
+    for (const auto& s : shapes)
+        s->describe();   // virtual dispatch: calls the right override
+
+    cout << "\n--- Part C: Pure virtual with a body ---\n";
+    vector<unique_ptr<Animal>> animals;
+    animals.push_back(make_unique<Dog>("Rex"));
+    animals.push_back(make_unique<Cat>("Whiskers"));
+
+    for (const auto& a : animals)
+        a->sound();
+
+    return 0;
+}

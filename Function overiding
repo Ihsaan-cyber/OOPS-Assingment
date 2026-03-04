@@ -1,0 +1,143 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <memory>
+using namespace std;
+
+
+// PART A – Basic overriding + calling base version
+
+class Employee {
+protected:
+    string name;
+    double baseSalary;
+
+public:
+    Employee(const string& n, double s) : name(n), baseSalary(s) {}
+
+    virtual double getSalary() const {
+        return baseSalary;
+    }
+
+    virtual void display() const {
+        cout << "  Employee : " << name
+             << "  | Salary: " << getSalary() << "\n";
+    }
+
+    virtual ~Employee() = default;
+};
+
+class Manager : public Employee {
+    double bonus;
+public:
+    Manager(const string& n, double s, double b)
+        : Employee(n, s), bonus(b) {}
+
+    
+    double getSalary() const override {
+        return Employee::getSalary() + bonus;   
+    }
+
+    void display() const override {
+        cout << "  Manager  : " << name
+             << "  | Salary: " << getSalary()
+             << "  (base=" << baseSalary << " + bonus=" << bonus << ")\n";
+    }
+};
+
+class Contractor : public Employee {
+    int    hoursWorked;
+    double hourlyRate;
+public:
+    Contractor(const string& n, int h, double r)
+        : Employee(n, 0), hoursWorked(h), hourlyRate(r) {}
+
+    
+    double getSalary() const override {
+        return hoursWorked * hourlyRate;
+    }
+
+    void display() const override {
+        cout << "  Contractor: " << name
+             << "  | Hours: " << hoursWorked
+             << "  | Rate: " << hourlyRate
+             << "  | Pay: " << getSalary() << "\n";
+    }
+};
+
+
+class Animal {
+public:
+    virtual void sound() const {
+        cout << "  [Animal] Generic sound\n";
+    }
+    virtual ~Animal() = default;
+};
+
+class Dog : public Animal {
+public:
+    
+    void sound() const override final {
+        cout << "  [Dog] Woof!\n";
+    }
+};
+
+class Poodle : public Dog {
+    void sound() const override { cout << "Yap!\n"; }   // ERROR
+};
+
+
+class Base {
+public:
+    // NOT virtual
+    void show() const { cout << "  [Base::show]    – static binding\n"; }
+
+    // virtual
+    virtual void vShow() const { cout << "  [Base::vShow]   – base\n"; }
+};
+
+class Derived : public Base {
+public:
+    void show()  const { cout << "  [Derived::show] – static binding (hides base)\n"; }
+    void vShow() const override { cout << "  [Derived::vShow]– dynamic binding\n"; }
+};
+
+
+int main() {
+    cout << "===== Function Overriding Demo =====\n\n";
+
+    
+    cout << "--- Part A: Polymorphic salary calculation ---\n";
+    vector<unique_ptr<Employee>> staff;
+    staff.push_back(make_unique<Employee>  ("Alice",  50000));
+    staff.push_back(make_unique<Manager>   ("Bob",    60000, 15000));
+    staff.push_back(make_unique<Contractor>("Carol",  160, 75));
+
+    for (const auto& e : staff)
+        e->display();   // virtual dispatch: right override called each time
+
+    
+    cout << "\n--- Part B: 'final' prevents further overriding ---\n";
+    Animal* a = new Dog();
+    a->sound();    // calls Dog::sound() via virtual dispatch
+    delete a;
+
+    
+    cout << "\n--- Part C: Static vs Dynamic binding ---\n";
+    Base*    bp = new Derived();
+
+    cout << "  Calling non-virtual show() via Base pointer:\n";
+    bp->show();      // calls Base::show()  <-- static binding!
+
+    cout << "  Calling virtual vShow() via Base pointer:\n";
+    bp->vShow();     // calls Derived::vShow() <-- dynamic binding
+
+    Derived* dp = new Derived();
+    cout << "  Calling show() via Derived pointer:\n";
+    dp->show();      // calls Derived::show()
+
+    delete bp;
+    delete dp;
+
+    return 0;
+}
